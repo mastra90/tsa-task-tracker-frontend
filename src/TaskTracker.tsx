@@ -12,7 +12,6 @@ import {
   Box,
   Chip,
   Card,
-  ThemeProvider,
 } from "@mui/material";
 import { darkTheme } from "./theme";
 
