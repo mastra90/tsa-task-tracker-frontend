@@ -24,7 +24,118 @@ import {
 } from "@mui/icons-material";
 import { useTaskEdit, useTasks } from "./CustomHooks";
 import { Task } from "./api";
-import { colors } from "./theme";
+
+const EditTask = ({
+  editValues,
+  updateField,
+  save,
+  edit,
+}: {
+  editValues: { title: string; description: string };
+  updateField: (field: "title" | "description", value: string) => void;
+  save: (editFn: any) => void;
+  edit: any;
+}) => {
+  return (
+    <Box
+      sx={{ flexGrow: 1 }}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) {
+          save(edit);
+        }
+      }}
+    >
+      <TextField
+        variant="standard"
+        fullWidth
+        placeholder="Title"
+        value={editValues.title}
+        onChange={(e) => updateField("title", e.target.value)}
+        slotProps={{
+          input: {
+            disableUnderline: true,
+          },
+        }}
+        // Allows user to click Enter key to save changes
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            save(edit);
+          }
+        }}
+      />
+      <TextField
+        variant="standard"
+        fullWidth
+        multiline
+        placeholder="Description"
+        value={editValues.description}
+        onChange={(e) => updateField("description", e.target.value)}
+        slotProps={{
+          input: {
+            disableUnderline: true,
+          },
+        }}
+        autoFocus
+        // Automatically focuses cursor to the end of description text
+        onFocus={(e) =>
+          e.currentTarget.setSelectionRange(
+            e.currentTarget.value.length,
+            e.currentTarget.value.length
+          )
+        }
+      />
+    </Box>
+  );
+};
+
+const TaskCheckbox = ({
+  task,
+  onToggle,
+}: {
+  task: Task;
+  onToggle: (task: Task) => void;
+}) => {
+  const iconContent = (
+    <Box sx={{ display: "flex" }}>
+      <UncheckedIcon
+        className="unchecked"
+        sx={{
+          opacity: task.completed ? 1 : 0,
+        }}
+      />
+      <CheckedIcon
+        className="checked"
+        sx={{
+          position: "absolute",
+          opacity: task.completed ? 0 : 1,
+        }}
+      />
+    </Box>
+  );
+  return (
+    <Tooltip
+      placement="left"
+      title={task.completed ? "Mark incomplete" : "Mark completed"}
+    >
+      <Checkbox
+        checked={task.completed}
+        onChange={() => onToggle(task)}
+        icon={iconContent}
+        checkedIcon={iconContent}
+        sx={{
+          mr: 1,
+          alignSelf: "flex-start",
+          "&:hover .unchecked": {
+            opacity: task.completed ? 0 : 1,
+          },
+          "&:hover .checked": {
+            opacity: task.completed ? 1 : 0,
+          },
+        }}
+      />
+    </Tooltip>
+  );
+};
 
 const TaskTracker = () => {
   const { tasks, add, remove, toggle, edit } = useTasks();
@@ -32,58 +143,8 @@ const TaskTracker = () => {
   const [createTask, setCreateTask] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
 
-  const incompleteTasks = tasks.filter((t) => !t.completed);
-  const completedTasks = tasks.filter((t) => t.completed);
-
-  const TaskCheckbox = ({
-    task,
-    onToggle,
-  }: {
-    task: Task;
-    onToggle: (task: Task) => void;
-  }) => {
-    const iconContent = (
-      <Box sx={{ display: "flex" }}>
-        <UncheckedIcon
-          className="unchecked"
-          sx={{
-            opacity: task.completed ? 1 : 0,
-          }}
-        />
-        <CheckedIcon
-          className="checked"
-          sx={{
-            position: "absolute",
-            opacity: task.completed ? 0 : 1,
-          }}
-        />
-      </Box>
-    );
-    return (
-      <Tooltip
-        placement="left"
-        title={task.completed ? "Mark incomplete" : "Mark completed"}
-      >
-        <Checkbox
-          checked={task.completed}
-          onChange={() => onToggle(task)}
-          icon={iconContent}
-          checkedIcon={iconContent}
-          sx={{
-            mr: 1,
-            alignSelf: "flex-start",
-
-            "&:hover .unchecked": {
-              opacity: task.completed ? 0 : 1,
-            },
-            "&:hover .checked": {
-              opacity: task.completed ? 1 : 0,
-            },
-          }}
-        />
-      </Tooltip>
-    );
-  };
+  const isIncomplete = tasks.filter((t) => !t.completed);
+  const isCompleted = tasks.filter((t) => t.completed);
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
@@ -104,155 +165,70 @@ const TaskTracker = () => {
           }}
         />
 
-        {/* Incompleted view */}
         <List>
-          {incompleteTasks.map((task) => (
-            <ListItem
-              disableGutters
-              key={task.id}
-              sx={{
-                alignItems: "center",
-                "&:hover .actions": { opacity: 1 },
-                bgcolor: editingId === task.id ? colors.hover : "transparent",
-              }}
-            >
-              {/* Task checkboxes */}
+          {/* Incomplete tasks */}
+          {isIncomplete.map((task) => (
+            <ListItem disableGutters key={task.id}>
               <TaskCheckbox task={task} onToggle={toggle} />
               {editingId !== task.id && (
                 <Tooltip placement="right" title="Edit task">
                   <ListItemText
                     onClick={() => start(task)}
                     sx={{ cursor: "pointer" }}
-                    primary={
-                      <Typography
-                        variant="body1"
-                        sx={{
-                          textDecoration: task.completed
-                            ? "line-through"
-                            : "none",
-                        }}
-                      >
-                        {task.title}
-                      </Typography>
-                    }
+                    primary={task.title}
                     secondary={task.description}
                   />
                 </Tooltip>
               )}
 
+              {/* Editing tasks */}
               {editingId === task.id && (
-                // Task edit view
-                <Box
-                  sx={{ flexGrow: 1 }}
-                  onBlur={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget)) {
-                      save(edit);
-                    }
-                  }}
-                >
-                  <TextField
-                    variant="standard"
-                    fullWidth
-                    placeholder="Title"
-                    value={editValues.title}
-                    onChange={(e) => updateField("title", e.target.value)}
-                    slotProps={{
-                      input: {
-                        disableUnderline: true,
-                      },
-                    }}
-                    // Allows user to click Enter key to save changes
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        save(edit);
-                      }
-                    }}
-                  />
-                  <TextField
-                    variant="standard"
-                    fullWidth
-                    multiline
-                    placeholder="Description"
-                    value={editValues.description}
-                    onChange={(e) => updateField("description", e.target.value)}
-                    slotProps={{
-                      input: {
-                        disableUnderline: true,
-                      },
-                    }}
-                    // Deetermined behaviour when clicking to edit task.
-                    // Automatically focuses to the end of the text in the description field
-                    autoFocus
-                    onFocus={(e) =>
-                      e.currentTarget.setSelectionRange(
-                        e.currentTarget.value.length,
-                        e.currentTarget.value.length
-                      )
-                    }
-                  />
-                </Box>
+                <EditTask
+                  editValues={editValues}
+                  updateField={updateField}
+                  save={save}
+                  edit={edit}
+                />
               )}
             </ListItem>
           ))}
-        </List>
 
-        {/* Completed view */}
-        <List sx={{ pt: 0 }}>
-          {completedTasks.length > 0 && (
-            <>
-              <ListItemButton
-                disableRipple
-                onClick={() => setShowCompleted((prev) => !prev)}
-              >
-                <ListItemText
-                  primary={`Completed (${completedTasks.length})`}
-                />
-                {showCompleted ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-
-              <Collapse in={showCompleted}>
-                <List disablePadding>
-                  {completedTasks.map((task) => (
-                    <ListItem key={task.id}>
-                      <TaskCheckbox task={task} onToggle={toggle} />
-                      <ListItemText
-                        primary={
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontSize={"medium"}
-                            sx={{ textDecoration: "line-through" }}
-                          >
-                            {task.title}
-                          </Typography>
-                        }
-                        secondary={
-                          <>
-                            {task.description && (
-                              <Typography variant="body2" component="span">
-                                {task.description}
-                              </Typography>
-                            )}
-                            <Typography variant="caption" component="span">
-                              {task.description && <br />}
-                              Completed:{" "}
-                              {task.updatedAt &&
-                              !isNaN(new Date(task.updatedAt).getTime())
-                                ? new Date(task.updatedAt).toLocaleDateString()
-                                : "Unknown"}
-                            </Typography>
-                          </>
-                        }
-                      />
-                      <IconButton onClick={() => remove(task.id)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </ListItem>
-                  ))}
-                </List>
-              </Collapse>
-            </>
+          {/* Completed collapsible */}
+          {isCompleted.length > 0 && (
+            <ListItemButton
+              disableRipple
+              onClick={() => setShowCompleted((prev) => !prev)}
+            >
+              <ListItemText primary={`Completed (${isCompleted.length})`} />
+              {showCompleted ? <ExpandLess /> : <ExpandMore />}
+            </ListItemButton>
           )}
+
+          {/* Completed tasks */}
+          {isCompleted.map((task) => (
+            <Collapse in={showCompleted}>
+              <ListItem key={task.id}>
+                <TaskCheckbox task={task} onToggle={toggle} />
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      fontSize={"medium"}
+                      sx={{ textDecoration: "line-through" }}
+                    >
+                      {task.title}
+                      <br></br>
+                    </Typography>
+                  }
+                  secondary={`Completed: ${new Date().toLocaleDateString()}`}
+                />
+                <IconButton onClick={() => remove(task.id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </ListItem>
+            </Collapse>
+          ))}
         </List>
       </Card>
     </Container>
