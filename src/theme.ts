@@ -1,12 +1,24 @@
 import { createTheme } from "@mui/material/styles";
 
 export const colors = {
-  grey: "#393939",
+  darkCharcoal: "#141617",
+  lightCharcoal: "#0f1011",
+  grey: "#c2c0bc",
+  successGreen: "#48bb78",
+  wanringAmber: "#ed8936",
+  errorRed: "#f56565",
+  hover: "#181e1a",
 };
 
 export const theme = createTheme({
   palette: {
-    mode: "dark",
+    primary: {
+      main: colors.grey,
+    },
+    background: {
+      default: colors.darkCharcoal,
+      paper: colors.lightCharcoal,
+    },
   },
   components: {
     MuiCard: {
