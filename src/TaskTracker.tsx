@@ -1,122 +1,175 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Container,
-  Typography,
   List,
   ListItem,
   ListItemText,
-  FormGroup,
-  FormControlLabel,
   Checkbox,
-  Paper,
+  IconButton,
+  TextField,
   Box,
-  Chip,
+  Typography,
+  Collapse,
+  ListItemButton,
   Card,
 } from "@mui/material";
-import { darkTheme } from "./theme";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Check as CheckIcon,
+  ExpandMore,
+  ExpandLess,
+} from "@mui/icons-material";
+import { useTaskEdit, useTasks } from "./CustomHooks";
 
-// Test commit - 12:40pm 2nd July
-
-interface Task {
-  id: number;
-  title: string;
-  description?: string;
-  completed: boolean;
-}
-
-const TaskTracker: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
+const TaskTracker = () => {
+  const { tasks, taskMap, add, remove, toggle, edit } = useTasks();
+  const { editingId, editValues, start, save, updateField } = useTaskEdit();
+  const [newTaskTitle, setNewTaskTitle] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
-  const [showIncomplete, setShowIncomplete] = useState(true);
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
-
-  const fetchTasks = async () => {
-    try {
-      const response = await fetch(`${API_URL}/tasks`);
-      console.log(response);
-      const data = await response.json();
-      setTasks(data);
-    } catch (error) {
-      console.error("Failed to fetch tasks:", error);
-    }
-  };
-
-  const filteredTasks = tasks.filter((task) => {
-    if (task.completed && !showCompleted) return false;
-    if (!task.completed && !showIncomplete) return false;
-    return true;
-  });
+  const incompleteTasks = tasks.filter((t) => !t.completed);
+  const completedTasks = tasks.filter((t) => t.completed);
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Task Tracker
-      </Typography>
-
-      <Card sx={{ p: 2, mb: 3 }}>
+    <Container maxWidth="sm" sx={{ py: 2 }}>
+      <Card>
         <Typography variant="h6" gutterBottom>
-          Filter Tasks
+          My Tasks ({taskMap.size})
         </Typography>
-        <FormGroup row>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={showCompleted}
-                onChange={(e) => setShowCompleted(e.target.checked)}
-              />
-            }
-            label="Show Completed"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={showIncomplete}
-                onChange={(e) => setShowIncomplete(e.target.checked)}
-              />
-            }
-            label="Show Incomplete"
-          />
-        </FormGroup>
-      </Card>
 
-      <Paper>
+        <TextField
+          placeholder="Add a task"
+          fullWidth
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              add(newTaskTitle);
+              setNewTaskTitle("");
+            }
+          }}
+        />
+
         <List>
-          {filteredTasks.map((task) => (
-            <ListItem key={task.id} divider>
-              <ListItemText
-                primary={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Typography variant="h6">{task.title}</Typography>
-                    <Chip
-                      label={task.completed ? "Completed" : "Incomplete"}
-                      sx={{
-                        bgcolor:
-                          task.completed === true
-                            ? darkTheme.palette.success.main
-                            : "default",
-                      }}
-                      size="small"
-                    />
-                  </Box>
-                }
-                secondary={task.description || "No description"}
+          {incompleteTasks.map((task) => (
+            <ListItem
+              key={task.id}
+            >
+              <Checkbox
+                checked={task.completed}
+                onChange={() => toggle(task)}
+                sx={{ mr: 1 }}
               />
+              {editingId === task.id ? (
+                <Box sx={{ flexGrow: 1 }}>
+                  <TextField
+                    variant="standard"
+                    fullWidth
+                    value={editValues.title}
+                    onChange={(e) => updateField("title", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
+                    sx={{ mb: 1 }}
+                  />
+                  <TextField
+                    variant="standard"
+                    fullWidth
+                    multiline
+                    value={editValues.description}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
+                  />
+                </Box>
+              ) : (
+                <ListItemText
+                  primary={
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textDecoration: task.completed
+                          ? "line-through"
+                          : "none",
+                        
+                      }}
+                    >
+                      {task.title}
+                    </Typography>
+                  }
+                  secondary={task.description}
+                />
+              )}
+              <Box
+                className="actions"
+                sx={{ opacity: 0, transition: "opacity 0.3s", display: "flex" }}
+              >
+                {editingId === task.id ? (
+                  <IconButton onClick={() => save(edit)}>
+                    <CheckIcon />
+                  </IconButton>
+                ) : (
+                  <IconButton onClick={() => start(task)}>
+                    <EditIcon />
+                  </IconButton>
+                )}
+              </Box>
             </ListItem>
           ))}
-          {filteredTasks.length === 0 && (
-            <ListItem>
-              <ListItemText
-                primary="No tasks found"
-                secondary="No tasks match the current filter criteria"
-              />
-            </ListItem>
+
+          {completedTasks.length > 0 && (
+            <>
+              <ListItemButton onClick={() => setShowCompleted((prev) => !prev)}>
+                <ListItemText
+                  primary={`Completed (${completedTasks.length})`}
+                />
+                {showCompleted ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+              <Collapse in={showCompleted} timeout="auto" unmountOnExit>
+                <List disablePadding>
+                  {completedTasks.map((task) => (
+                    <ListItem key={task.id} divider sx={{ pl: 0, pr: 1 }}>
+                      <Checkbox
+                        checked={task.completed}
+                        onChange={() => toggle(task)}
+                        sx={{ mr: 1 }}
+                      />
+                      <ListItemText
+                        primary={
+                          <Typography
+                            variant="body1"
+                            sx={{ textDecoration: "line-through" }}
+                          >
+                            {task.title}
+                          </Typography>
+                        }
+                        secondary={
+                          <>
+                            {task.description && (
+                              <Typography variant="body2" component="span">
+                                {task.description}
+                              </Typography>
+                            )}
+                            <Typography variant="caption" component="span">
+                              {task.description && <br />}
+                              Completed:{" "}
+                              {task.updatedAt &&
+                              !isNaN(new Date(task.updatedAt).getTime())
+                                ? new Date(task.updatedAt).toLocaleDateString()
+                                : "Unknown"}
+                            </Typography>
+                          </>
+                        }
+                      />
+                      <IconButton onClick={() => remove(task.id)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            </>
           )}
         </List>
-      </Paper>
+      </Card>
     </Container>
   );
 };
