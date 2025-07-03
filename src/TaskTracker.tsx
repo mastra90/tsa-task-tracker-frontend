@@ -13,6 +13,7 @@ import {
   ListItemButton,
   Card,
   Tooltip,
+  CardHeader,
 } from "@mui/material";
 import {
   Delete as DeleteIcon,
@@ -24,9 +25,10 @@ import {
 } from "@mui/icons-material";
 import { useTaskEdit, useTasks } from "./CustomHooks";
 import { Task } from "./api";
+import { colors } from "./theme";
 
 const TaskTracker = () => {
-  const { tasks, taskMap, add, remove, toggle, edit } = useTasks();
+  const { tasks, add, remove, toggle, edit } = useTasks();
   const { editingId, editValues, start, save, updateField } = useTaskEdit();
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
@@ -86,10 +88,9 @@ const TaskTracker = () => {
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
       <Card>
-        <Typography variant="h6" gutterBottom>
-          My Tasks ({taskMap.size})
-        </Typography>
+        <CardHeader sx={{ p: 0, pb: 2 }} title="My Tasks" />
 
+        {/* Add task field*/}
         <TextField
           placeholder="Add a task"
           fullWidth
@@ -103,39 +104,21 @@ const TaskTracker = () => {
           }}
         />
 
+        {/* Tasks list */}
         <List>
           {incompleteTasks.map((task) => (
             <ListItem
+              disableGutters
               key={task.id}
               sx={{
-                pl: 0,
-                pr: 1,
                 "&:hover .actions": { opacity: 1 },
+                bgcolor: editingId === task.id ? colors.hover : "transparent",
               }}
             >
               <TaskCheckbox task={task} onToggle={toggle} />
+
               {/* Edit styling */}
-              {editingId === task.id ? (
-                <Box sx={{ flexGrow: 1 }}>
-                  <TextField
-                    variant="standard"
-                    fullWidth
-                    value={editValues.title}
-                    onChange={(e) => updateField("title", e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
-                    sx={{ mb: 1, border: "none" }}
-                  />
-                  <TextField
-                    variant="standard"
-                    fullWidth
-                    multiline
-                    placeholder="Description"
-                    value={editValues.description}
-                    onChange={(e) => updateField("description", e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
-                  />
-                </Box>
-              ) : (
+              {editingId !== task.id ? (
                 <Tooltip placement="right" title="Edit task">
                   <ListItemText
                     onClick={() => start(task)}
@@ -155,7 +138,37 @@ const TaskTracker = () => {
                     secondary={task.description}
                   />
                 </Tooltip>
+              ) : (
+                <Box sx={{ flexGrow: 1 }}>
+                  <TextField
+                    variant="standard"
+                    fullWidth
+                    value={editValues.title}
+                    onChange={(e) => updateField("title", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
+                    slotProps={{
+                      input: {
+                        disableUnderline: true,
+                      },
+                    }}
+                  />
+                  <TextField
+                    variant="standard"
+                    fullWidth
+                    multiline
+                    placeholder="Description"
+                    value={editValues.description}
+                    onChange={(e) => updateField("description", e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && save(edit)}
+                    slotProps={{
+                      input: {
+                        disableUnderline: true,
+                      },
+                    }}
+                  />
+                </Box>
               )}
+
               <Box
                 className="actions"
                 sx={{
@@ -183,15 +196,17 @@ const TaskTracker = () => {
                 {showCompleted ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
 
-              <Collapse in={showCompleted} timeout="auto" unmountOnExit>
+              <Collapse in={showCompleted}>
                 <List disablePadding>
                   {completedTasks.map((task) => (
-                    <ListItem key={task.id} divider sx={{ pl: 0, pr: 1 }}>
+                    <ListItem key={task.id}>
                       <TaskCheckbox task={task} onToggle={toggle} />
                       <ListItemText
                         primary={
                           <Typography
-                            variant="body1"
+                            variant="body2"
+                            color="text.secondary"
+                            fontSize={"medium"}
                             sx={{ textDecoration: "line-through" }}
                           >
                             {task.title}

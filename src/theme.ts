@@ -33,6 +33,8 @@ export const theme = createTheme({
     MuiListItem: {
       styleOverrides: {
         root: {
+          paddingLeft: 0,
+          paddingRight: 8,
           borderRadius: 4,
           "&:hover": {
             backgroundColor: colors.hover,
