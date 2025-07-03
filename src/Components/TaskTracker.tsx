@@ -124,6 +124,24 @@ const TaskTracker = () => {
               key={task.id}
               sx={{
                 display: allTasksCompleted() && !noTasks ? "none" : "flex",
+                transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                transform: "translateY(0)",
+                opacity: 1,
+                animation: "slideDown 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  backgroundColor: colors.hover,
+                  transform: "translateX(4px)",
+                },
+                "@keyframes slideDown": {
+                  from: {
+                    transform: "translateY(-10px)",
+                    opacity: 0,
+                  },
+                  to: {
+                    transform: "translateY(0)",
+                    opacity: 1,
+                  },
+                },
               }}
             >
               <TaskCheckbox task={task} onToggle={toggle} />
@@ -154,7 +172,7 @@ const TaskTracker = () => {
             </ListItem>
           ))}
 
-          {/* Render when all tasks are nark as completed*/}
+          {/* Render when all tasks are marked as completed*/}
           <AllCompletedView />
 
           {/* Completed tasks */}
@@ -162,6 +180,13 @@ const TaskTracker = () => {
             <ListItemButton
               disableRipple
               onClick={() => setShowCompleted((prev) => !prev)}
+              sx={{
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": {
+                  backgroundColor: colors.hover,
+                  transform: "translateX(4px)",
+                },
+              }}
             >
               <ListItemText primary={`Completed (${isCompleted.length})`} />
               {showCompleted ? <ExpandLess /> : <ExpandMore />}
@@ -171,7 +196,28 @@ const TaskTracker = () => {
           {/* Completed tasks */}
           {isCompleted.map((task) => (
             <Collapse in={showCompleted} key={task.id}>
-              <ListItem>
+              <ListItem
+                sx={{
+                  transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+                  transform: "translateY(0)",
+                  opacity: 1,
+                  animation: "slideDown 0.8s cubic-bezier(0.4, 0, 0.2, 1)",
+                  "&:hover": {
+                    backgroundColor: colors.hover,
+                    transform: "translateX(4px)",
+                  },
+                  "@keyframes slideDown": {
+                    from: {
+                      transform: "translateY(-10px)",
+                      opacity: 0,
+                    },
+                    to: {
+                      transform: "translateY(0)",
+                      opacity: 1,
+                    },
+                  },
+                }}
+              >
                 <TaskCheckbox task={task} onToggle={toggle} />
                 <ListItemText
                   primary={
