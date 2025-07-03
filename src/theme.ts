@@ -21,6 +21,14 @@ export const theme = createTheme({
     },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          minWidth: "320px",
+          minHeight: "100vh",
+        },
+      },
+    },
     MuiCard: {
       styleOverrides: {
         root: {
