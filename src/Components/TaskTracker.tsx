@@ -23,6 +23,7 @@ import {
   CardHeader,
 } from "@mui/material";
 import formatDate from "../Helpers/formatDate";
+import { colors, theme } from "../theme";
 
 const TaskTracker = () => {
   const [showCompleted, setShowCompleted] = useState(true);
@@ -127,8 +128,25 @@ const TaskTracker = () => {
                   }
                   secondary={formatDate(task.updatedAt)}
                 />
-                <IconButton onClick={() => remove(task.id)}>
-                  <DeleteIcon />
+                <IconButton
+                  onClick={() => remove(task.id)}
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    "&:hover": {
+                      opacity: task.completed ? 1 : 0,
+                      color: colors.deleteRed,
+                    },
+                  }}
+                >
+                  <DeleteIcon
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      "&:hover": {
+                        opacity: task.completed ? 1 : 0,
+                        color: colors.deleteRed,
+                      },
+                    }}
+                  />
                 </IconButton>
               </ListItem>
             </Collapse>

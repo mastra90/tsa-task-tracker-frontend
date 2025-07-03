@@ -58,6 +58,7 @@ const EditTask = ({
         slotProps={{
           input: {
             disableUnderline: true,
+            style: { fontSize: 14, color: "#908f8e" },
           },
         }}
         autoFocus

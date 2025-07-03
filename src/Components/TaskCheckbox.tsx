@@ -4,6 +4,7 @@ import {
   CircleOutlined as CheckedIcon,
   CheckCircle as UncheckedIcon,
 } from "@mui/icons-material";
+import { colors, theme } from "../theme";
 
 const TaskCheckbox = ({
   task,
@@ -18,6 +19,7 @@ const TaskCheckbox = ({
         className="unchecked"
         sx={{
           opacity: task.completed ? 1 : 0,
+          color: colors.checkedGreen,
         }}
       />
       <CheckedIcon
@@ -47,6 +49,7 @@ const TaskCheckbox = ({
           },
           "&:hover .checked": {
             opacity: task.completed ? 1 : 0,
+            color: theme.palette.text.secondary,
           },
         }}
       />
