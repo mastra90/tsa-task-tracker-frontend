@@ -22,6 +22,7 @@ import {
   Tooltip,
   CardHeader,
 } from "@mui/material";
+import formatDate from "../Helpers/formatDate";
 
 const TaskTracker = () => {
   const [createTask, setCreateTask] = useState("");
@@ -34,24 +35,6 @@ const TaskTracker = () => {
 
   const isIncomplete = tasks.filter((t) => !t.completed);
   const isCompleted = tasks.filter((t) => t.completed);
-
-  // Function to format date as "3:13pm 3rd July 25"
-  const formatDate = (dateString?: string) => {
-    const d = dateString ? new Date(dateString) : new Date();
-    const time = d
-      .toLocaleTimeString("en-AU", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-      .toLowerCase();
-    const day = d.getDate();
-    const month = d.toLocaleDateString("en-AU", { month: "long" });
-    const year = d.getFullYear().toString().slice(-2);
-    const suffix =
-      day > 3 && day < 21 ? "th" : ["th", "st", "nd", "rd"][day % 10] || "th";
-    return `Completed: ${time} ${day}${suffix} ${month} ${year}`;
-  };
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>

@@ -35,7 +35,7 @@ const TaskCheckbox = ({
       title={task.completed ? "Mark incomplete" : "Mark completed"}
     >
       <Checkbox
-        checked={task.completed}
+        checked={Boolean(task.completed)}
         onChange={() => onToggle(task)}
         icon={iconContent}
         checkedIcon={iconContent}
