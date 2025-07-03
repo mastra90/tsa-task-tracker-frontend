@@ -42,5 +42,15 @@ export const theme = createTheme({
         },
       },
     },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+          "&:hover": {
+            backgroundColor: colors.hover,
+          },
+        },
+      },
+    },
   },
 });
