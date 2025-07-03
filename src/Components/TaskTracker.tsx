@@ -1,6 +1,6 @@
 import EditTask from "./EditTask";
 import TaskCheckbox from "./TaskCheckbox";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFetchData } from "../CustomHooks/useFetchData";
 import { useTaskChanges } from "../CustomHooks/useTaskChanges";
 import {
@@ -21,15 +21,19 @@ import {
   Card,
   Tooltip,
   CardHeader,
+  CircularProgress,
+  Box,
 } from "@mui/material";
 import formatDate from "../Helpers/formatDate";
 import { colors, theme } from "../theme";
+import NoTasksView from "./NoTasksView";
 
 const TaskTracker = () => {
   const [showCompleted, setShowCompleted] = useState(true);
+  const [showLoadingCard, setShowLoadingCard] = useState(true);
 
-  // Custom hooks
-  const { tasks, create, remove, toggle, edit } = useFetchData();
+  // Custom hooks - destructure loading from useFetchData
+  const { tasks, create, remove, toggle, edit, loading } = useFetchData();
   const {
     editingId,
     editValues,
@@ -43,8 +47,54 @@ const TaskTracker = () => {
     handleCreate,
   } = useTaskChanges();
 
+  // Show loading card for minimum 1500ms to show loading state working
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoadingCard(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   const isIncomplete = tasks.filter((t) => !t.completed);
   const isCompleted = tasks.filter((t) => t.completed);
+  const noTasks = !isCompleted.length && !isIncomplete.length;
+
+  const allTasksCompleted = () => {
+    return isCompleted.length && !isIncomplete.length;
+  };
+
+  const AllCompletedView = () =>
+    allTasksCompleted() ? <NoTasksView variant="all-completed" /> : <></>;
+
+  const LoadingCard = () => (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: 320,
+        flexDirection: "column",
+        gap: 2,
+      }}
+    >
+      <CircularProgress sx={{ color: colors.checkedGreen }} size={48} />
+      <Typography variant="body2" color="text.secondary">
+        Loading tasks...
+      </Typography>
+    </Box>
+  );
+
+  if (showLoadingCard || loading) {
+    return (
+      <Container maxWidth="sm" sx={{ py: 2 }}>
+        <Card>
+          <CardHeader sx={{ p: 0, pb: 2 }} title="My Tasks" />
+          <LoadingCard />
+        </Card>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="sm" sx={{ py: 2 }}>
@@ -66,10 +116,16 @@ const TaskTracker = () => {
           }}
         />
 
+        {/* Incomplete tasks */}
         <List>
-          {/* Incomplete tasks */}
           {isIncomplete.map((task) => (
-            <ListItem disableGutters key={task.id}>
+            <ListItem
+              disableGutters
+              key={task.id}
+              sx={{
+                display: allTasksCompleted() && !noTasks ? "none" : "flex",
+              }}
+            >
               <TaskCheckbox task={task} onToggle={toggle} />
               {editingId !== task.id && (
                 <Tooltip placement="right" title="Edit task">
@@ -98,7 +154,10 @@ const TaskTracker = () => {
             </ListItem>
           ))}
 
-          {/* Completed collapsible */}
+          {/* Render when all tasks are nark as completed*/}
+          <AllCompletedView />
+
+          {/* Completed tasks */}
           {isCompleted.length > 0 && (
             <ListItemButton
               disableRipple
@@ -123,7 +182,6 @@ const TaskTracker = () => {
                       sx={{ textDecoration: "line-through" }}
                     >
                       {task.title}
-                      <br></br>
                     </Typography>
                   }
                   secondary={formatDate(task.updatedAt)}
@@ -133,25 +191,20 @@ const TaskTracker = () => {
                   sx={{
                     color: theme.palette.text.secondary,
                     "&:hover": {
-                      opacity: task.completed ? 1 : 0,
+                      opacity: 1,
                       color: colors.deleteRed,
                     },
                   }}
                 >
-                  <DeleteIcon
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      "&:hover": {
-                        opacity: task.completed ? 1 : 0,
-                        color: colors.deleteRed,
-                      },
-                    }}
-                  />
+                  <DeleteIcon />
                 </IconButton>
               </ListItem>
             </Collapse>
           ))}
         </List>
+
+        {/* No Tasks view */}
+        {noTasks ? <NoTasksView variant="no-tasks" /> : <></>}
       </Card>
     </Container>
   );
