@@ -30,5 +30,15 @@ export const theme = createTheme({
         },
       },
     },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          borderRadius: 4,
+          "&:hover": {
+            backgroundColor: colors.hover,
+          },
+        },
+      },
+    },
   },
 });

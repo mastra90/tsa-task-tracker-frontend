@@ -21,7 +21,6 @@ import {
   ExpandLess,
   CircleOutlined as CheckedIcon,
   CheckCircle as UncheckedIcon,
-  Edit,
 } from "@mui/icons-material";
 import { useTaskEdit, useTasks } from "./CustomHooks";
 import { Task } from "./api";
@@ -44,19 +43,41 @@ const TaskTracker = () => {
   }) => {
     const iconContent = (
       <Box sx={{ display: "flex" }}>
-        {task.completed ? <UncheckedIcon /> : <CheckedIcon />}
+        <UncheckedIcon
+          className="unchecked"
+          sx={{
+            opacity: task.completed ? 1 : 0,
+          }}
+        />
+        <CheckedIcon
+          className="checked"
+          sx={{
+            position: "absolute",
+            opacity: task.completed ? 0 : 1,
+          }}
+        />
       </Box>
     );
 
     return (
       <Tooltip
-        title={task.completed ? "Mark as incomplete" : "Mark as completed"}
+        placement="left"
+        title={task.completed ? "Mark incomplete" : "Mark completed"}
       >
         <Checkbox
           checked={task.completed}
           onChange={() => onToggle(task)}
           icon={iconContent}
           checkedIcon={iconContent}
+          sx={{
+            mr: 1,
+            "&:hover .unchecked": {
+              opacity: task.completed ? 0 : 1,
+            },
+            "&:hover .checked": {
+              opacity: task.completed ? 1 : 0,
+            },
+          }}
         />
       </Tooltip>
     );
@@ -115,31 +136,40 @@ const TaskTracker = () => {
                   />
                 </Box>
               ) : (
-                <ListItemText
-                  primary={
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        textDecoration: task.completed
-                          ? "line-through"
-                          : "none",
-                      }}
-                    >
-                      {task.title}
-                    </Typography>
-                  }
-                  secondary={task.description}
-                />
+                <Tooltip placement="right" title="Edit task">
+                  <ListItemText
+                    onClick={() => start(task)}
+                    sx={{ cursor: "pointer" }}
+                    primary={
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          textDecoration: task.completed
+                            ? "line-through"
+                            : "none",
+                        }}
+                      >
+                        {task.title}
+                      </Typography>
+                    }
+                    secondary={task.description}
+                  />
+                </Tooltip>
               )}
-              {editingId === task.id ? (
-                <IconButton onClick={() => save(edit)}>
-                  <CheckIcon />
-                </IconButton>
-              ) : (
-                <IconButton onClick={() => start(task)}>
-                  <Edit />
-                </IconButton>
-              )}
+              <Box
+                className="actions"
+                sx={{
+                  opacity: 0,
+                  transition: "opacity 0.3s",
+                  display: "flex",
+                }}
+              >
+                {editingId === task.id && (
+                  <IconButton onClick={() => save(edit)}>
+                    <CheckIcon />
+                  </IconButton>
+                )}
+              </Box>
             </ListItem>
           ))}
 
