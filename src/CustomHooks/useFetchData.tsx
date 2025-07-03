@@ -23,6 +23,7 @@ export const useFetchData = () => {
       setTaskMap((prev) => new Map(prev).set(newTask.id, newTask));
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 
@@ -32,6 +33,7 @@ export const useFetchData = () => {
       setTaskMap((prev) => new Map(prev).set(id, result));
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 
@@ -62,6 +64,7 @@ export const useFetchData = () => {
       });
     } catch (error) {
       console.error(error);
+      throw error;
     }
   };
 

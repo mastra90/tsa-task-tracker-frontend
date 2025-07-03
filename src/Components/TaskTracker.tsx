@@ -25,13 +25,22 @@ import {
 import formatDate from "../Helpers/formatDate";
 
 const TaskTracker = () => {
-  const [createTask, setCreateTask] = useState("");
   const [showCompleted, setShowCompleted] = useState(true);
 
   // Custom hooks
   const { tasks, create, remove, toggle, edit } = useFetchData();
-  const { editingId, editValues, startEditing, updateField, handleSave } =
-    useTaskChanges();
+  const {
+    editingId,
+    editValues,
+    startEditing,
+    updateField,
+    handleSave,
+    errors,
+    createTask,
+    createErrors,
+    updateCreateTask,
+    handleCreate,
+  } = useTaskChanges();
 
   const isIncomplete = tasks.filter((t) => !t.completed);
   const isCompleted = tasks.filter((t) => t.completed);
@@ -46,11 +55,12 @@ const TaskTracker = () => {
           placeholder="Add a task"
           fullWidth
           value={createTask}
-          onChange={(e) => setCreateTask(e.target.value)}
+          onChange={(e) => updateCreateTask(e.target.value)}
+          error={!!createErrors.title}
+          helperText={createErrors.title}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              create(createTask);
-              setCreateTask("");
+              handleCreate(create);
             }
           }}
         />
@@ -81,6 +91,7 @@ const TaskTracker = () => {
                     updateField("description", value)
                   }
                   onSave={() => handleSave(edit)}
+                  errors={errors}
                 />
               )}
             </ListItem>

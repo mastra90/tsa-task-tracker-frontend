@@ -1,4 +1,5 @@
 import { TextField, Box } from "@mui/material";
+import { ValidationErrors } from "../api";
 
 type EditTaskProps = {
   title: string;
@@ -6,6 +7,7 @@ type EditTaskProps = {
   onTitleChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onSave: () => void;
+  errors?: ValidationErrors;
 };
 
 const EditTask = ({
@@ -14,6 +16,7 @@ const EditTask = ({
   onTitleChange,
   onDescriptionChange,
   onSave,
+  errors,
 }: EditTaskProps) => {
   return (
     <Box
@@ -30,6 +33,8 @@ const EditTask = ({
         placeholder="Title"
         value={title}
         onChange={(e) => onTitleChange(e.target.value)}
+        error={!!errors?.title}
+        helperText={errors?.title}
         slotProps={{
           input: {
             disableUnderline: true,
@@ -48,6 +53,8 @@ const EditTask = ({
         placeholder="Description"
         value={description}
         onChange={(e) => onDescriptionChange(e.target.value)}
+        error={!!errors?.description}
+        helperText={errors?.description}
         slotProps={{
           input: {
             disableUnderline: true,
