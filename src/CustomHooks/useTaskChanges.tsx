@@ -19,6 +19,7 @@ export const useTaskChanges = () => {
       title: task.title,
       description: task.description || "",
     });
+    setErrors({});
   };
 
   const updateField = (field: keyof typeof editValues, value: string) => {
